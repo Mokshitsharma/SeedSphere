@@ -4,6 +4,7 @@ import { Product } from '../types';
 import { initialProducts } from './initialProducts';
 
 export { initialProducts };
+export const products = initialProducts;
 
 export const fetchProducts = async (): Promise<Product[]> => {
   const querySnapshot = await getDocs(collection(db, 'products'));

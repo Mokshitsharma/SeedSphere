@@ -1,20 +1,35 @@
-import React from 'react';
-import { products } from '../data/products';
+import React, { useState, useEffect } from 'react';
+import { fetchProducts } from '../data/products';
+import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import ProductCard from './ProductCard';
 import { Sparkles } from 'lucide-react';
 
 const CartRecommendations: React.FC = () => {
   const { cart } = useCart();
+  const [recommendations, setRecommendations] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Filter out products already in the cart
-  const cartItemIds = new Set(cart.map((item) => item.id));
-  const recommendations = products
-    .filter((product) => !cartItemIds.has(product.id))
-    .sort(() => 0.5 - Math.random()) // Randomize
-    .slice(0, 4); // Show 4 recommendations
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      try {
+        const allProducts = await fetchProducts();
+        const cartItemIds = new Set(cart.map((item) => item.id));
+        const filtered = allProducts
+          .filter((product) => !cartItemIds.has(product.id))
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 4);
+        setRecommendations(filtered);
+      } catch (err) {
+        console.error('Error loading recommendations:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRecommendations();
+  }, [cart]);
 
-  if (recommendations.length === 0) return null;
+  if (loading || recommendations.length === 0) return null;
 
   return (
     <div className="mt-20">
