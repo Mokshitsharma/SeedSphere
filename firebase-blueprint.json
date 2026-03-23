@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A seed product available for purchase.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Product name" },
+        "description": { "type": "string", "description": "Product description" },
+        "price": { "type": "number", "description": "Price in INR" },
+        "category": { "type": "string", "enum": ["Vegetables", "Fruits", "Flowers", "Grains"] },
+        "image": { "type": "string", "format": "url" },
+        "featured": { "type": "boolean" }
+      },
+      "required": ["name", "price", "category", "image"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer order.",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string", "description": "Razorpay order ID" },
+        "paymentId": { "type": "string", "description": "Razorpay payment ID" },
+        "amount": { "type": "number", "description": "Total amount in INR" },
+        "status": { "type": "string", "enum": ["Pending", "Paid", "Failed"] },
+        "customer": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "phone": { "type": "string" },
+            "address": { "type": "string" },
+            "pincode": { "type": "string" }
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["orderId", "amount", "status", "customer", "items", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of seed products."
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of customer orders."
+    }
+  }
+}
