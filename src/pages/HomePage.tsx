@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Leaf, Sprout, Droplets, Sun, Database } from 'lucide-react';
+import { ArrowRight, Leaf, Sprout, Droplets, Sun, Database, Flower2, Wrench, FlaskConical, ShieldAlert, Wheat, Bean, Flame } from 'lucide-react';
 import { fetchProducts, seedProducts } from '../data/products';
 import { Product } from '../types';
 import ProductCard from '../components/ProductCard';
 import { motion } from 'motion/react';
+import { auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const HomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAdmin(user?.email === 'mokshitsharmalaptop@gmail.com');
+    });
+
     const loadProducts = async () => {
       try {
         const data = await fetchProducts();
@@ -22,6 +29,7 @@ const HomePage: React.FC = () => {
       }
     };
     loadProducts();
+    return () => unsubscribe();
   }, []);
 
   const featuredProducts = products.filter(p => p.featured).slice(0, 4);
@@ -37,7 +45,11 @@ const HomePage: React.FC = () => {
     { name: 'Vegetables', icon: <Sprout className="h-6 w-6" />, color: 'bg-emerald-100 text-emerald-700' },
     { name: 'Fruits', icon: <Leaf className="h-6 w-6" />, color: 'bg-orange-100 text-orange-700' },
     { name: 'Flowers', icon: <Sun className="h-6 w-6" />, color: 'bg-rose-100 text-rose-700' },
-    { name: 'Grains', icon: <Droplets className="h-6 w-6" />, color: 'bg-amber-100 text-amber-700' },
+    { name: 'Grains', icon: <Wheat className="h-6 w-6" />, color: 'bg-amber-100 text-amber-700' },
+    { name: 'Pulses', icon: <Bean className="h-6 w-6" />, color: 'bg-teal-100 text-teal-700' },
+    { name: 'Oilseeds', icon: <Droplets className="h-6 w-6" />, color: 'bg-yellow-100 text-yellow-700' },
+    { name: 'Spices', icon: <Flame className="h-6 w-6" />, color: 'bg-red-100 text-red-700' },
+    { name: 'Herbs', icon: <Flower2 className="h-6 w-6" />, color: 'bg-lime-100 text-lime-700' },
   ];
 
   return (
@@ -77,12 +89,14 @@ const HomePage: React.FC = () => {
               >
                 Shop Collection <ArrowRight className="h-5 w-5" />
               </Link>
-              <button
-                onClick={handleSeed}
-                className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl backdrop-blur-md transition-all border border-white/20 flex items-center gap-2"
-              >
-                <Database className="h-5 w-5" /> Seed Database
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={handleSeed}
+                  className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl backdrop-blur-md transition-all border border-white/20 flex items-center gap-2"
+                >
+                  <Database className="h-5 w-5" /> Seed Database
+                </button>
+              )}
             </div>
           </motion.div>
         </div>

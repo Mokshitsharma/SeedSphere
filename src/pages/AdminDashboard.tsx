@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { products as initialProducts } from '../data/products';
+import { products as initialProducts, seedProducts } from '../data/products';
 import { 
   LayoutDashboard, 
   Package, 
@@ -12,7 +12,8 @@ import {
   Users,
   CheckCircle2,
   Clock,
-  X
+  X,
+  Database
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -20,6 +21,7 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders'>('overview');
   const [products, setProducts] = useState(initialProducts);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Mock Orders
@@ -37,6 +39,21 @@ const AdminDashboard: React.FC = () => {
   const handleDeleteProduct = (id: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       setProducts(products.filter(p => p.id !== id));
+    }
+  };
+
+  const handleSeedDatabase = async () => {
+    if (window.confirm('This will seed the database with initial products. Continue?')) {
+      setIsSeeding(true);
+      try {
+        await seedProducts();
+        alert('Database seeded successfully! Please refresh to see changes.');
+      } catch (err) {
+        console.error('Error seeding database:', err);
+        alert('Error seeding database. Check console.');
+      } finally {
+        setIsSeeding(false);
+      }
     }
   };
 
@@ -167,12 +184,22 @@ const AdminDashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold text-stone-900">Product Catalog</h1>
-              <button 
-                onClick={() => setIsAddingProduct(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-900/20"
-              >
-                <Plus className="h-5 w-5" /> Add Product
-              </button>
+              <div className="flex gap-4">
+                <button 
+                  onClick={handleSeedDatabase}
+                  disabled={isSeeding}
+                  className="flex items-center gap-2 px-6 py-3 bg-stone-800 text-white font-bold rounded-2xl hover:bg-stone-900 transition-all shadow-lg shadow-stone-900/20 disabled:opacity-50"
+                >
+                  <Database className={`h-5 w-5 ${isSeeding ? 'animate-spin' : ''}`} /> 
+                  {isSeeding ? 'Seeding...' : 'Seed Database'}
+                </button>
+                <button 
+                  onClick={() => setIsAddingProduct(true)}
+                  className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-900/20"
+                >
+                  <Plus className="h-5 w-5" /> Add Product
+                </button>
+              </div>
             </div>
 
             <div className="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden">
@@ -303,6 +330,13 @@ const AdminDashboard: React.FC = () => {
                       <option>Fruits</option>
                       <option>Flowers</option>
                       <option>Grains</option>
+                      <option>Herbs</option>
+                      <option>Tools</option>
+                      <option>Fertilizers</option>
+                      <option>Pest Control</option>
+                      <option>Pulses</option>
+                      <option>Oilseeds</option>
+                      <option>Spices</option>
                     </select>
                   </div>
                   <div>

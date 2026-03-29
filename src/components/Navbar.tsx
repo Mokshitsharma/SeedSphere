@@ -1,19 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Leaf, Menu, X, Heart } from 'lucide-react';
+import { ShoppingCart, Leaf, Menu, X, Heart, LogIn, LogOut, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { auth } from '../firebase';
+import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 
 const Navbar: React.FC = () => {
   const { totalItems } = useCart();
   const { wishlist } = useWishlist();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const location = useLocation();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const isAdmin = user?.email === 'mokshitsharmalaptop@gmail.com';
 
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Products', path: '/products' },
+    ...(isAdmin ? [{ name: 'Admin', path: '/admin' }] : []),
   ];
 
   return (
@@ -57,6 +87,26 @@ const Navbar: React.FC = () => {
                   </span>
                 )}
               </Link>
+              <div className="ml-2">
+                {user ? (
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 hover:text-emerald-600 transition-colors"
+                    title={user.email || ''}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span className="hidden lg:inline">Logout</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleLogin}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-900/10"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    <span>Login</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -123,6 +173,31 @@ const Navbar: React.FC = () => {
               >
                 Wishlist ({wishlist.length})
               </Link>
+              <div className="pt-4 border-t border-stone-100">
+                {user ? (
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex w-full items-center gap-3 px-3 py-4 text-base font-medium text-stone-600 hover:bg-stone-50 rounded-lg transition-all"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout ({user.email})</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      handleLogin();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex w-full items-center gap-3 px-3 py-4 text-base font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-900/10"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    <span>Login with Google</span>
+                  </button>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

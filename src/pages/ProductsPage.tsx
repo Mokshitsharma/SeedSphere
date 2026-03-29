@@ -28,7 +28,7 @@ const ProductsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
 
-  const categories = ['All', 'Vegetables', 'Fruits', 'Flowers', 'Grains'];
+  const categories = ['All', 'Vegetables', 'Fruits', 'Flowers', 'Grains', 'Herbs', 'Tools', 'Fertilizers', 'Pest Control', 'Pulses', 'Oilseeds', 'Spices'];
 
   const filteredProducts = useMemo(() => {
     return products

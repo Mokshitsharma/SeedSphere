@@ -39,8 +39,11 @@ const CheckoutPage: React.FC = () => {
         body: JSON.stringify({ amount: totalPrice, customer: formData }),
       });
 
-      if (!orderResponse.ok) throw new Error('Failed to create order');
-      const { orderId, amount, currency } = await orderResponse.json();
+      const orderData = await orderResponse.json();
+      if (!orderResponse.ok) {
+        throw new Error(orderData.details || orderData.error || 'Failed to create order');
+      }
+      const { orderId, amount, currency, keyId } = orderData;
 
       // 2. Load Razorpay Script
       const loadScript = (src: string) => {
@@ -62,7 +65,7 @@ const CheckoutPage: React.FC = () => {
 
       // 3. Open Razorpay Checkout
       const options = {
-        key: 'rzp_test_placeholder', // This should be your RAZORPAY_KEY_ID from env, but for frontend we use a public key or placeholder
+        key: keyId, 
         amount: amount,
         currency: currency,
         name: "SeedSphere",

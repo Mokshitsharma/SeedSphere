@@ -3,7 +3,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  category: 'Vegetables' | 'Fruits' | 'Flowers' | 'Grains';
+  category: 'Vegetables' | 'Fruits' | 'Flowers' | 'Grains' | 'Herbs' | 'Tools' | 'Fertilizers' | 'Pest Control' | 'Pulses' | 'Oilseeds' | 'Spices';
   image: string;
   featured?: boolean;
 }

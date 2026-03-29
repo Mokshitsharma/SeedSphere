@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
@@ -71,15 +72,30 @@ const PORT = 3000;
 app.use(express.json());
 
 // Razorpay Instance
+const key_id = process.env.RAZORPAY_KEY_ID;
+const key_secret = process.env.RAZORPAY_KEY_SECRET;
+
+if (!key_id || key_id === 'YOUR_RAZORPAY_KEY_ID') {
+  console.warn('WARNING: RAZORPAY_KEY_ID is not configured. Payments will fail.');
+}
+
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret',
+  key_id: key_id || 'rzp_test_placeholder',
+  key_secret: key_secret || 'placeholder_secret',
 });
 
 // API: Create Razorpay Order
 app.post('/api/create-order', async (req, res) => {
   try {
     const { amount, customer } = req.body;
+
+    if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === 'YOUR_RAZORPAY_KEY_ID') {
+      console.error('Razorpay Key ID is not configured. Please set RAZORPAY_KEY_ID in AI Studio Secrets.');
+      return res.status(500).json({ 
+        error: 'Razorpay is not configured', 
+        details: 'Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in the Secrets panel.' 
+      });
+    }
 
     const options = {
       amount: Math.round(amount * 100), // amount in smallest currency unit (paise)
@@ -88,10 +104,18 @@ app.post('/api/create-order', async (req, res) => {
     };
 
     const order = await razorpay.orders.create(options);
-    res.json({ orderId: order.id, amount: order.amount, currency: order.currency });
-  } catch (error) {
+    res.json({ 
+      orderId: order.id, 
+      amount: order.amount, 
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID
+    });
+  } catch (error: any) {
     console.error('Error creating Razorpay order:', error);
-    res.status(500).json({ error: 'Failed to create order' });
+    res.status(500).json({ 
+      error: 'Failed to create order', 
+      details: error.description || error.message || 'Authentication failed'
+    });
   }
 });
 
